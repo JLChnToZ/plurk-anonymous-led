@@ -18,6 +18,16 @@ if(nav) {
   led.setAttribute('color', '#AE00B0'); // 主要顏色
   // led.setAttribute('dim-color', ''); // 暗淡顏色
   // led.setAttribute('bgcolor', ''); // 背景顏色
-  led.setAttribute('lang', document.documentElement.lang || document.body.lang || 'zh-tw');
-  led.setAttribute('src', '/Stats/getAnonymousPlurks?lang=zh&limit=15');
+  // 語系選擇器
+  let lang = document.documentElement.lang || document.body.lang || 'zh-tw';
+  let srcLang;
+  switch(lang) {
+    case 'zh-Hant-HK':
+    case 'zh-Hant': lang = 'zh-tw'; srcLang = 'zh'; break;
+    case 'zh-Hans': lang = 'zh-cn'; srcLang = 'zh'; break;
+    case 'ja': srcLang = 'ja'; break;
+    default:   srcLang = 'en'; break;
+  }
+  led.setAttribute('lang', lang);
+  led.setAttribute('src', `/Stats/getAnonymousPlurks?lang=${srcLang}&limit=15`);
 }
