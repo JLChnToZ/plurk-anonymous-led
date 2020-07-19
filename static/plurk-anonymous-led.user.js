@@ -30,4 +30,16 @@ if(nav) {
   }
   led.setAttribute('lang', lang);
   led.setAttribute('src', `/Stats/getAnonymousPlurks?lang=${srcLang}&limit=15`);
+  if(document.querySelector('#navbar_search_kw')) {
+    const { sheet } = document.head.appendChild(document.createElement('style'));
+    sheet.insertRule(`#navbar_search_kw input {
+      width: 35px;
+      transition: width 0.2s;
+      transition-delay: 0.2s;
+    }`, sheet.cssRules.length);
+    sheet.insertRule(`#navbar_search_kw:hover input, #navbar_search_kw input:focus {
+      width: 200px;
+      transition-delay: 0s;
+    }`, sheet.cssRules.length);
+  }
 }
