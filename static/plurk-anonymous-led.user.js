@@ -2,8 +2,9 @@
 // @name        Anonymous Plurks LED
 // @namespace   https://plurk.moka-rin.moe/readplurk/
 // @match       https://www.plurk.com/*
-// @grant       none
-// @version     1.1
+// @updateURL   https://plurk.moka-rin.moe/readplurk/led/plurk-anonymous-led.user.js
+// @grant       GM_addStyle
+// @version     1.2
 // @author      Jeremy Lam "JLChnToZ"
 // @description Anonymous Plurk LED
 // @require     https://plurk.moka-rin.moe/readplurk/led/js/1.led.js?2020071901
@@ -30,16 +31,15 @@ if(nav) {
   }
   led.setAttribute('lang', lang);
   led.setAttribute('src', `/Stats/getAnonymousPlurks?lang=${srcLang}&limit=15`);
-  if(document.querySelector('#navbar_search_kw')) {
-    const { sheet } = document.head.appendChild(document.createElement('style'));
-    sheet.insertRule(`#navbar_search_kw input {
+  if(document.querySelector('#navbar_search_kw')) GM_addStyle(`
+    #navbar_search_kw input {
       width: 35px;
-      transition: width 0.2s;
-      transition-delay: 0.2s;
-    }`, sheet.cssRules.length);
-    sheet.insertRule(`#navbar_search_kw:hover input, #navbar_search_kw input:focus {
+      transition: opacity 0.3s, width 0.2s;
+      transition-delay: 0, 0.2s;
+    }
+    #navbar_search_kw:hover input, #navbar_search_kw input:focus {
       width: 200px;
       transition-delay: 0s;
-    }`, sheet.cssRules.length);
-  }
+    }
+  `);
 }
