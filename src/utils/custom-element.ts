@@ -1,8 +1,7 @@
-import { Superise } from '.';
+import { Superise, resetGlobalRegex } from '.';
+import { toKebab } from './kebab';
 
 const commonPrefixPostfix = /(?:^(?:html))|(?:(?:custom)?(?:element|component|handler)$)/gi;
-const camels = /(?<!^|-)(\p{Lu}|\d+)/gu;
-const illegalTagChars = /[^\.0-9a-z-_\xC0-\xD6\xD8-\xF6\xF8-\u{037D}\u{037F}-\u{1FFF}\u{200C}-\u{200D}\u{203F}-\u{2040}\u{2070}-\u{218F}\u{2C00}-\u{2FEF}\u{3001}-\u{D7FF}\u{F900}-\u{FDCF}\u{FDF0}-\u{FFFD}\u{10000}-\u{EFFFF}]+/gu;
 const tagNameMap = new Map<Function, string>([
   [window.HTMLAnchorElement, 'a'],
   [window.HTMLAppletElement, 'applet'],
@@ -94,11 +93,6 @@ interface TagFor {
 interface TypedCustomElementConsturctor {
   new(...args: any[]): ICustomElement;
   readonly observedAttributes?: Iterable<string>;
-}
-
-function resetGlobalRegex(matcher: RegExp) {
-  matcher.lastIndex = 0;
-  return matcher;
 }
 
 function guessTagName(proto: HTMLElement): string {
@@ -195,12 +189,10 @@ export function CustomElement(
         super.attributeChangedCallback?.(name, oldValue, newValue);
       }
     }
-    const name = typeof target === 'string' ? target : Class.name
+    const name = typeof target === 'string' ? target : toKebab(Class.name
       .trim()
       .replace(resetGlobalRegex(commonPrefixPostfix), '')
-      .replace(resetGlobalRegex(camels), '-$1')
-      .toLowerCase()
-      .replace(resetGlobalRegex(illegalTagChars), '');
+    );
     const is = ext === true ? guessTagName(Class.prototype) : ext || undefined;
     window.customElements.define(name, WrappedClass, { extends: is });
     tagFor.set(WrappedClass, { name, is });
@@ -209,58 +201,62 @@ export function CustomElement(
 }
 
 /** Observes an attribute and assigns the new/initial value on changes. */
-export function ObserveAttribute<T extends ConvertibleTypes>(name: string, type: T, optional: true):
+export function ObserveAttribute<T extends ConvertibleTypes>(name: string | null | undefined, type: T, optional: true):
   ((target: ICustomElement, key: PropertyKey, descriptor: TypedPropertyDescriptor<ObservedTypeMap[T] | undefined>) =>
     TypedPropertyDescriptor<ObservedTypeMap[T] | undefined>) &
   ((target: ICustomElement, key: PropertyKey) => void);
-export function ObserveAttribute<T extends ConvertibleTypes>(name: string, type: T):
+export function ObserveAttribute<T extends ConvertibleTypes>(name: string | null | undefined, type: T):
   ((target: ICustomElement, key: PropertyKey, descriptor: TypedPropertyDescriptor<ObservedTypeMap[T]>) =>
     TypedPropertyDescriptor<ObservedTypeMap[T]>) &
   ((target: ICustomElement, key: PropertyKey) => void);
-export function ObserveAttribute(name: string):
+export function ObserveAttribute(name?: string | null):
   ((target: ICustomElement, key: PropertyKey, descriptor: TypedPropertyDescriptor<string>) => TypedPropertyDescriptor<string>) &
   ((target: ICustomElement, key: PropertyKey) => void);
-export function ObserveAttribute(name: string, type: keyof ObservedTypeMap = 'string', optional?: boolean) {
+export function ObserveAttribute(name: string | null | undefined, type: keyof ObservedTypeMap = 'string', optional?: boolean) {
   return (target: ICustomElement, key: PropertyKey, property?: PropertyDescriptor): PropertyDescriptor | void => {
     const Class = target.constructor as CustomElementConstructor;
     const mapping: AttributeMapping = { key, type, optional };
     let mappings = observeAttributesMap.get(Class);
     if(!mappings)
       observeAttributesMap.set(Class, mappings = new Map());
-    const mappingList = mappings.get(name);
+    const attrName = name ?? toKebab(key.toString());
+    const mappingList = mappings.get(attrName);
     if(mappingList)
       mappingList.push(mapping);
     else
-      mappings.set(name, [mapping]);
+      mappings.set(attrName, [mapping]);
     return property;
   };
 }
 
 /** Make the property reflects to the value of an attribute. */
-export function ReflectAttribute<T extends ConvertibleTypes>(name: string, type?: T) {
-  return (target: ICustomElement, key: PropertyKey): void => void Object.defineProperty(target, key, type && type !== 'string' ? ({
-    configurable: true,
-    get() {
-      return convert(type, this.getAttribute(name));
-    },
-    set(value) {
-      if(type === 'boolean' ? !value : value == null)
-        this.removeAttribute(name);
-      else
-        this.setAttribute(name, value.toString());
-    },
-  } as PropertyDescriptor & ThisType<ICustomElement>) : ({
-    configurable: true,
-    get() {
-      return this.getAttribute(name);
-    },
-    set(value) {
-      if(value == null)
-        this.removeAttribute(name);
-      else
-        this.setAttribute(name, value);
-    },
-  } as TypedPropertyDescriptor<string | null | undefined> & ThisType<ICustomElement>));
+export function ReflectAttribute<T extends ConvertibleTypes>(name?: string | null, type?: T) {
+  return (target: ICustomElement, key: PropertyKey) => {
+    const attrName = name ?? toKebab(key.toString());
+    Object.defineProperty(target, key, type && type !== 'string' ? ({
+      configurable: true,
+      get() {
+        return convert(type, this.getAttribute(attrName));
+      },
+      set(value) {
+        if(type === 'boolean' ? !value : value == null)
+          this.removeAttribute(attrName);
+        else
+          this.setAttribute(attrName, value.toString());
+      },
+    } as PropertyDescriptor & ThisType<ICustomElement>) : ({
+      configurable: true,
+      get() {
+        return this.getAttribute(attrName);
+      },
+      set(value) {
+        if(value == null)
+          this.removeAttribute(attrName);
+        else
+          this.setAttribute(attrName, value);
+      },
+    } as TypedPropertyDescriptor<string | null | undefined> & ThisType<ICustomElement>));
+  };
 }
 
 /** Get tag name for a custom element class if registered. */

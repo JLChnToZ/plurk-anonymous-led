@@ -32,6 +32,11 @@ export function nextPowerOf2(v: number) {
   return v + 1;
 }
 
+export function resetGlobalRegex(matcher: RegExp) {
+  matcher.lastIndex = 0;
+  return matcher;
+}
+
 const superiseHandler: ProxyHandler<any> = {
   has(target, key) {
     for(let base: Function | null = target;
