@@ -63,7 +63,7 @@ export class BDF {
 
   toString() {
     let text = '';
-    for(let glyph in this.glyphs)
+    for(const glyph in this.glyphs)
       text += String.fromCharCode(parseInt(glyph));
     return text;
   }
@@ -152,11 +152,11 @@ export class BDF {
         };
         break;
       case 'BITMAP':
-        for(var row = 0; row < meta.size!.points; row++, i++) {
-          var byte = parseInt(fontLines[i + 1], 16);
+        for(let row = 0; row < meta.size!.points; row++, i++) {
+          const byte = parseInt(fontLines[i + 1], 16);
           currentChar!.bytes.push(byte);
           currentChar!.bitmap[row] = [];
-          for(var bit = 0, hint = nextPowerOf2(currentChar!.boundingBox!.width); bit <= hint; bit++)
+          for(let bit = 0, hint = nextPowerOf2(currentChar!.boundingBox!.width); bit <= hint; bit++)
             currentChar!.bitmap[row][hint - bit] = !!(byte & (1 << bit));
         }
         break;
@@ -185,21 +185,21 @@ export class BDF {
     const fontDescent = this.meta!.properties!.fontDescent!;
     if(!_bitmap) {
       _bitmap = { width: 0, height: points };
-      for(var row = 0; row < points; row++)
+      for(let row = 0; row < points; row++)
         _bitmap[row] = [];
     }
 
-    for(var i = 0; i < text.length; i++) {
-      var charCode = text[i].charCodeAt(0);
-      var glyphData = this.glyphs[charCode];
+    for(let i = 0; i < text.length; i++) {
+      const charCode = text[i].charCodeAt(0);
+      const glyphData = this.glyphs[charCode];
       if(!glyphData) {
-        console.error('Could not found character ' + charCode);
+        console.error(`Could not found character ${charCode}`);
         continue;
       }
-      for(var y = 0, bm = glyphData.bitmap, by = bm.length; y < by; y++) {
-        for(var x = 0, bx = bm[y].length; x < bx; x++) {
-          var row = y + glyphData.boundingBox!.y + fontDescent;
-          var column = x + glyphData.boundingBox!.x + _bitmap.width;
+      for(let y = 0, bm = glyphData.bitmap, by = bm.length; y < by; y++) {
+        for(let x = 0, bx = bm[y].length; x < bx; x++) {
+          const row = y + glyphData.boundingBox!.y + fontDescent;
+          const column = x + glyphData.boundingBox!.x + _bitmap.width;
           _bitmap[row][column] = _bitmap[row][column] || glyphData.bitmap[y][x];
         }
       }

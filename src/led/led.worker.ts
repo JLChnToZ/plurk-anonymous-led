@@ -159,8 +159,7 @@ class LedWorker {
   }
 
   updateFocus({ state }: Focus) {
-    const isSame = this.isFocus === !!state;
-    if(isSame) return;
+    if(this.isFocus === !!state) return;
     this.isFocus = !!state;
     if(state) this.update();
   }
@@ -173,7 +172,7 @@ class LedWorker {
     this.context.fillStyle = this.color;
     const size = this.scale - this.padding;
     const offset = this.padding / 2;
-    for(var y = 0; y < this.unscaledHeight; y++) {
+    for(let y = 0; y < this.unscaledHeight; y++) {
       for(let x = 0; x < this.unscaledWidth; x++) {
         let fill = false;
         for(const region of this.regions.values())
