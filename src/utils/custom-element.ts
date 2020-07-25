@@ -1,4 +1,4 @@
-import { resetGlobalRegex } from '.';
+import { resetGlobalRegex, getSymbolKey } from '.';
 import { toKebab, toCamel } from './kebab';
 
 const commonPrefixPostfix = /(?:^(?:html))|(?:(?:custom)?(?:element|component|handler)$)/gi;
@@ -221,7 +221,9 @@ export function ObserveAttribute(name: string | null | undefined, type: keyof Ob
     let mappings = observeAttributesMap.get(Class);
     if(!mappings)
       observeAttributesMap.set(Class, mappings = new Map());
-    const attrName = name ?? toKebab(key.toString());
+    const attrName = name ?? toKebab(
+      typeof key === 'symbol' ? getSymbolKey(key) : key.toString(),
+    );
     const mappingList = mappings.get(attrName);
     if(mappingList)
       mappingList.push(mapping);

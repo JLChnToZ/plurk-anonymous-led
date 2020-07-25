@@ -3,7 +3,7 @@ import moment from 'moment';
 import h from './utils/jsx-helper';
 import { reorder as reorderUBidi, resolve as resolveUBidi } from 'unicode-bidirectional';
 import { qrcodegen } from './third-parties/qrcodegen';
-import { LedDisplay } from './led/led';
+import { LedDisplay } from './led';
 import { bmFont } from './res/unifont-glyph';
 import { LedDisplayRegion } from './led/led-region';
 import { getCodePoints, delay, Bind } from './utils';

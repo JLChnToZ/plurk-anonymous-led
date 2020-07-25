@@ -1,3 +1,5 @@
+const symbolMatcher = /^Symbol\((.*)\)$/;
+
 export function delay(timeout: number): Promise<void>;
 export function delay<T>(timeout: number, value: T): Promise<T extends PromiseLike<infer P> ? P : T>;
 export function delay(timeout: number, value?: unknown) {
@@ -35,6 +37,10 @@ export function nextPowerOf2(v: number) {
 export function resetGlobalRegex(matcher: RegExp) {
   matcher.lastIndex = 0;
   return matcher;
+}
+
+export function getSymbolKey(sym: symbol) {
+  return sym.toString().replace(symbolMatcher, '$1');
 }
 
 export var Bind: MethodDecorator = (target, key, descriptor) => {
