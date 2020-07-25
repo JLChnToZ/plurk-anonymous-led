@@ -138,6 +138,10 @@ function convert(type: keyof ObservedTypeMap, value: string | null) {
   }
 }
 
+function keyToAttrName(key: PropertyKey) {
+  return toKebab(typeof key === 'symbol' ? getSymbolKey(key) : key.toString());
+}
+
 /** Wraps the custom element class with dynamic attribute observers and registers it. */
 export function CustomElement(
   isExtends?: boolean,
@@ -221,9 +225,7 @@ export function ObserveAttribute(name: string | null | undefined, type: keyof Ob
     let mappings = observeAttributesMap.get(Class);
     if(!mappings)
       observeAttributesMap.set(Class, mappings = new Map());
-    const attrName = name ?? toKebab(
-      typeof key === 'symbol' ? getSymbolKey(key) : key.toString(),
-    );
+    const attrName = name ?? keyToAttrName(key);
     const mappingList = mappings.get(attrName);
     if(mappingList)
       mappingList.push(mapping);
@@ -236,7 +238,7 @@ export function ObserveAttribute(name: string | null | undefined, type: keyof Ob
 /** Make the property reflects to the value of an attribute. */
 export function ReflectAttribute<T extends ConvertibleTypes>(name?: string | null, type?: T) {
   return (target: ICustomElement, key: PropertyKey) => {
-    const attrName = name ?? toKebab(key.toString());
+    const attrName = name ?? keyToAttrName(key);
     Object.defineProperty(target, key, type && type !== 'string' ? ({
       configurable: true,
       get() {
