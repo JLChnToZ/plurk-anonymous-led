@@ -37,34 +37,6 @@ export function resetGlobalRegex(matcher: RegExp) {
   return matcher;
 }
 
-const superiseHandler: ProxyHandler<any> = {
-  has(target, key) {
-    for(let base: Function | null = target;
-      base != null;
-      base = Object.getPrototypeOf(base.prototype)?.constructor)
-      if(key in base)
-        return true;
-    return false;
-  },
-  get(target, key, receiver) {
-    for(let base: Function | null = target;
-      base != null;
-      base = Object.getPrototypeOf(base.prototype)?.constructor)
-      if(key in base)
-        return Reflect.get(base, key, receiver);
-  },
-  set(target, key, value, receiver) {
-    for(let base: Function | null = target;
-      base != null;
-      base = Object.getPrototypeOf(base.prototype)?.constructor)
-      if(key in base)
-        return Reflect.set(base, key, value, receiver);
-    return Reflect.set(target, key, value, receiver);
-  },
-};
-
-export var Superise: ClassDecorator = Class => new Proxy(Class, superiseHandler);
-
 export var Bind: MethodDecorator = (target, key, descriptor) => {
   const Type: NewableFunction = target.constructor;
   if(descriptor.get || descriptor.set)

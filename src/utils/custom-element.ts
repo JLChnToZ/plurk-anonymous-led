@@ -1,4 +1,4 @@
-import { Superise, resetGlobalRegex } from '.';
+import { resetGlobalRegex } from '.';
 import { toKebab } from './kebab';
 
 const commonPrefixPostfix = /(?:^(?:html))|(?:(?:custom)?(?:element|component|handler)$)/gi;
@@ -163,7 +163,6 @@ export function CustomElement(
   }
   return wrap;
   function wrap(Class: TypedCustomElementConsturctor) {
-    @Superise
     class WrappedClass extends Class implements ICustomElement {
       static get observedAttributes() {
         const manual = super.observedAttributes;
@@ -196,7 +195,9 @@ export function CustomElement(
     const is = ext === true ? guessTagName(Class.prototype) : ext || undefined;
     window.customElements.define(name, WrappedClass, { extends: is });
     tagFor.set(WrappedClass, { name, is });
-    return WrappedClass as CustomElementConstructor;
+    return Object.defineProperty(WrappedClass, 'name', {
+      configurable: true, value: `Wrapped${Class.name}`,
+    }) as CustomElementConstructor;
   }
 }
 

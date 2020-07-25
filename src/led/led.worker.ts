@@ -1,5 +1,5 @@
 import { LedDisplayRegionWorker } from "./led-region.worker";
-import { AllData, DataType, UpdateCanvas, UpdateRegion, PushData, Clear, Fill } from './led.common';
+import { AllData, DataType, UpdateCanvas, UpdateRegion, PushData, Clear, Fill, Focus } from './led.common';
 import { Bind } from '../utils';
 
 let ledWorker: LedWorker | undefined;
@@ -26,6 +26,9 @@ self.addEventListener('message', ev => {
     case DataType.fill:
       ledWorker?.fill(data);
       break;
+    case DataType.focus:
+      ledWorker?.updateFocus(data);
+      break;
     default:
       console.warn('Unknown type', data);
   }
@@ -42,6 +45,7 @@ class LedWorker {
   private context: OffscreenCanvasRenderingContext2D;
   private regions = new Map<number, LedDisplayRegionWorker>();
   private triggered = false;
+  private isFocus = true;
 
   constructor(private canvas: OffscreenCanvas) {
     this.context = canvas.getContext('2d')!;
@@ -154,8 +158,16 @@ class LedWorker {
     this.regions.get(regionId)?.fill();
   }
 
+  updateFocus({ state }: Focus) {
+    const isUpdate = this.isFocus === !!state;
+    if(!isUpdate) return;
+    this.isFocus = !!state;
+    if(state) this.update();
+  }
+
   @Bind
   private update() {
+    if(!this.isFocus) return;
     this.context.fillStyle = this.backgroundColor;
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.fillStyle = this.color;
@@ -173,6 +185,6 @@ class LedWorker {
         this.context.fillRect(x * this.scale + offset, y * this.scale + offset, size, size);
       }
     }
-    requestAnimationFrame(this.update);
+    if(this.isFocus) requestAnimationFrame(this.update);
   }
 }

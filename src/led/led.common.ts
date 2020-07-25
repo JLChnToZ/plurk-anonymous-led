@@ -5,6 +5,7 @@ export const enum DataType {
   updateRegion = 'update-region',
   clear = 'clear',
   fill = 'fill',
+  focus = 'focus',
 }
 
 export interface Data {
@@ -57,4 +58,9 @@ export interface Fill extends Data {
   regionId: number;
 }
 
-export type AllData = TransferCanvas | UpdateCanvas | UpdateRegion | PushData | Clear | Fill;
+export interface Focus extends Data {
+  type: DataType.focus;
+  state?: boolean;
+}
+
+export type AllData = TransferCanvas | UpdateCanvas | UpdateRegion | PushData | Clear | Fill | Focus;

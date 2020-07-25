@@ -1,8 +1,9 @@
 import color from 'color';
 import LedWorker from 'worker-loader?inline=true&fallback=false!./led.worker';
 import { LedDisplayRegion, LedDisplayRegionOptions } from './led-region';
+import { Bind } from '../utils';
 import { CustomElement, ObserveAttribute } from '../utils/custom-element';
-import { TransferCanvas, Clear, DataType, UpdateCanvas } from './led.common';
+import { TransferCanvas, Clear, DataType, UpdateCanvas, Focus } from './led.common';
 
 @CustomElement('led-display', true)
 export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
@@ -104,6 +105,8 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
       dimColor: this.dimColor,
       backgroundColor: this.backgroundColor,
     } as UpdateCanvas);
+    if(this.ownerDocument.hidden) this.handleVisiblityChange();
+    this.ownerDocument.addEventListener('visibilitychange', this.handleVisiblityChange);
   }
 
   createRegion(options?: Partial<LedDisplayRegionOptions> | null) {
@@ -134,5 +137,13 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
     this.worker.postMessage({
       type: DataType.clear,
     } as Clear);
+  }
+
+  @Bind
+  private handleVisiblityChange() {
+    this.worker.postMessage({
+      type: DataType.focus,
+      state: !this.ownerDocument.hidden,
+    } as Focus);
   }
 }
