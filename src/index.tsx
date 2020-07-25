@@ -115,7 +115,7 @@ export default class LEDAnonymous extends HTMLElement implements ICustomElement 
       this.ledFill.clear();
       this.ledPxArt.draw(anonymousPixelArt, 0, 5);
     });
-    setInterval(this.update, 30);
+    setInterval(this.update, 60);
   }
 
   @Bind

@@ -159,8 +159,8 @@ class LedWorker {
   }
 
   updateFocus({ state }: Focus) {
-    const isUpdate = this.isFocus === !!state;
-    if(!isUpdate) return;
+    const isSame = this.isFocus === !!state;
+    if(isSame) return;
     this.isFocus = !!state;
     if(state) this.update();
   }
