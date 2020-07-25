@@ -1,5 +1,5 @@
 import { resetGlobalRegex } from '.';
-import { toKebab } from './kebab';
+import { toKebab, toCamel } from './kebab';
 
 const commonPrefixPostfix = /(?:^(?:html))|(?:(?:custom)?(?:element|component|handler)$)/gi;
 const tagNameMap = new Map<Function, string>([
@@ -163,7 +163,7 @@ export function CustomElement(
   }
   return wrap;
   function wrap(Class: TypedCustomElementConsturctor) {
-    class WrappedClass extends Class implements ICustomElement {
+    const WrappedClass: CustomElementConstructor = class extends Class implements ICustomElement {
       static get observedAttributes() {
         const manual = super.observedAttributes;
         const auto = observeAttributesMap.get(Class)?.keys();
@@ -177,7 +177,7 @@ export function CustomElement(
         if(attr)
           for(const [name, mapping] of attr)
             if(this.hasAttribute(name))
-              assignAttribute(mapping, this, this.getAttribute('key'));
+              assignAttribute(mapping, this, this.getAttribute(name));
       }
 
       attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
@@ -188,16 +188,17 @@ export function CustomElement(
         super.attributeChangedCallback?.(name, oldValue, newValue);
       }
     }
-    const name = typeof target === 'string' ? target : toKebab(Class.name
-      .trim()
-      .replace(resetGlobalRegex(commonPrefixPostfix), '')
+    const name = typeof target === 'string' ? target : toKebab(
+      Class.name.trim().replace(resetGlobalRegex(commonPrefixPostfix), ''),
     );
+    Object.defineProperty(WrappedClass, 'name', {
+      configurable: true,
+      value: `Wrapped${toCamel(name)}CustomElement`,
+    });
     const is = ext === true ? guessTagName(Class.prototype) : ext || undefined;
     window.customElements.define(name, WrappedClass, { extends: is });
     tagFor.set(WrappedClass, { name, is });
-    return Object.defineProperty(WrappedClass, 'name', {
-      configurable: true, value: `Wrapped${Class.name}`,
-    }) as CustomElementConstructor;
+    return WrappedClass;
   }
 }
 
