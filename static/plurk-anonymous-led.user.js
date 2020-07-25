@@ -4,11 +4,11 @@
 // @match       https://www.plurk.com/*
 // @updateURL   https://plurk.moka-rin.moe/readplurk/led/plurk-anonymous-led.user.js
 // @grant       GM_addStyle
-// @version     1.2
+// @version     1.3
 // @author      Jeremy Lam "JLChnToZ"
 // @description Anonymous Plurk LED
-// @require     https://plurk.moka-rin.moe/readplurk/led/js/1.led.js?2020071901
-// @require     https://plurk.moka-rin.moe/readplurk/led/js/led.js?2020071901
+// @require     https://plurk.moka-rin.moe/readplurk/led/js/1.led.js?2020072501
+// @require     https://plurk.moka-rin.moe/readplurk/led/js/led.js?2020072501
 // ==/UserScript==
 
 const nav = document.querySelector('.top-bar-main>ul');

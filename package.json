@@ -1,6 +1,6 @@
 {
   "name": "plurk-anon-led-display",
-  "version": "0.1.0",
+  "version": "0.1.3",
   "description": "LED Display for Anonymous Plurks",
   "main": "index.js",
   "author": "JLChnToZ <jeremylam619@gmail.com>",
