@@ -9,6 +9,7 @@ import { TransferCanvas, Clear, DataType, UpdateCanvas, Focus } from './led.comm
 @CustomElement('led-display', true)
 export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   private worker = new LedWorker();
+  private init?: boolean;
   private _unscaledWidth?: number;
   private _unscaledHeight?: number;
   private _scale?: number;
@@ -22,7 +23,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   get unscaledWidth() { return this._unscaledWidth ?? 88; }
   set unscaledWidth(value: number) {
     this._unscaledWidth = value;
-    this.worker.postMessage({
+    if(this.init) this.worker.postMessage({
       type: DataType.updateCanvas,
       unscaledWidth: this.unscaledWidth,
     } as UpdateCanvas);
@@ -32,7 +33,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   get unscaledHeight() { return this._unscaledHeight ?? 31; }
   set unscaledHeight(value: number) {
     this._unscaledHeight = value;
-    this.worker.postMessage({
+    if(this.init) this.worker.postMessage({
       type: DataType.updateCanvas,
       unscaledHeight: this.unscaledHeight,
     } as UpdateCanvas);
@@ -42,7 +43,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   get scale() { return this._scale ?? 4; }
   set scale(value: number) {
     this._scale = value;
-    this.worker.postMessage({
+    if(this.init) this.worker.postMessage({
       type: DataType.updateCanvas,
       scale: this.scale,
     } as UpdateCanvas);
@@ -52,7 +53,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   get padding() { return this._padding ?? 1; }
   set padding(value: number) {
     this._padding = value;
-    this.worker.postMessage({
+    if(this.init) this.worker.postMessage({
       type: DataType.updateCanvas,
       padding: this.padding,
     } as UpdateCanvas);
@@ -62,7 +63,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   get color() { return this._color || 'rgba(255, 128, 0, 0.75)'; }
   set color(value: string) {
     this._color = value;
-    this.worker.postMessage({
+    if(this.init) this.worker.postMessage({
       type: DataType.updateCanvas,
       color: this.color,
       dimColor: this.dimColor,
@@ -73,7 +74,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   get dimColor() { return this._dimColor || color(this.color).darken(0.8).fade(0.5).string(); }
   set dimColor(value: string) {
     this._dimColor = value;
-    this.worker.postMessage({
+    if(this.init) this.worker.postMessage({
       type: DataType.updateCanvas,
       dimColor: this.dimColor,
     } as UpdateCanvas);
@@ -83,7 +84,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
   get backgroundColor() { return this._backgroundColor || 'rgba(0, 0, 0, 0.25)'; }
   set backgroundColor(value: string) {
     this._backgroundColor = value;
-    this.worker.postMessage({
+    if(this.init) this.worker.postMessage({
       type: DataType.updateCanvas,
       backgroundColor: this.backgroundColor,
     } as UpdateCanvas);
@@ -107,6 +108,7 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
       dimColor: this.dimColor,
       backgroundColor: this.backgroundColor,
     } as UpdateCanvas);
+    this.init = true;
     if(this.ownerDocument.hidden) this.handleVisiblityChange();
     this.ownerDocument.addEventListener('visibilitychange', this.handleVisiblityChange);
   }
