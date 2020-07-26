@@ -1,9 +1,9 @@
-import { getTagFor } from './custom-element';
+import { getSymbolKey } from '.';
 
 export type JSXCreateElement = <T extends CustomElementConstructor | string>(
   tagName: T,
   attributes?: (
-    T extends CustomElementConstructor ? Partial<InstanceType<T>> & { [attribute: string]: any; } :
+    T extends CustomElementConstructor ? ConstructorParameters<T>[0] :
     T extends keyof HTMLElementTagNameMap ? AssignableDomElement<HTMLElementTagNameMap[T] & HTMLElement> :
     { [attribute: string]: any; }
   ),
@@ -105,19 +105,20 @@ const assignFn: AssignFnMap = {
 
 const empty = Object.freeze({});
 
-function createBaseElement(document: Document, nameOrClass: string | CustomElementConstructor) {
-  if(typeof nameOrClass === 'string')
-    return document.createElement(nameOrClass);
-  const info = getTagFor(nameOrClass);
-  if(!info)
-    throw new TypeError(`${nameOrClass.name} is not registered.`);
-  return info.is ?
-    document.createElement(info.is, { is: info.name }) :
-    document.createElement(info.name);
+function jsxCreateElement(this: Document, nameOrClass: string | CustomElementConstructor, attributes?: any, ...children: any[]) {
+  let element: HTMLElement;
+  switch(typeof nameOrClass) {
+    case 'string':
+      element = assignElementAttributes(this.createElement(nameOrClass), attributes);
+      break;
+    case 'function':
+      element = new nameOrClass(attributes);
+      break;
+  }
+  return appendChildren(this, element, children);
 }
 
-function jsxCreateElement(this: Document, nameOrClass: string | CustomElementConstructor, attributes: any = empty, ...children: any[]): any {
-  const element = createBaseElement(this, nameOrClass);
+export function assignElementAttributes<T extends HTMLElement>(element: T, attributes: AssignableDomElement<T> = empty) {
   for(const key in attributes) {
     const value: unknown = attributes[key];
     if(key in element) {
@@ -145,7 +146,7 @@ function jsxCreateElement(this: Document, nameOrClass: string | CustomElementCon
         element.setAttribute(key, value.toString(10));
         break;
       case 'symbol':
-        element.setAttribute(key, Symbol.keyFor(value) || value.toString() || key);
+        element.setAttribute(key, getSymbolKey(value));
         break;
       case 'function':
         element.addEventListener(key, value as EventListener);
@@ -164,7 +165,11 @@ function jsxCreateElement(this: Document, nameOrClass: string | CustomElementCon
         break;
     }
   }
-  for(const child of children) {
+  return element;
+}
+
+function appendChildren<T extends Node>(document: Document, element: T, children: any[]) {
+  for(const child of children)
     switch(typeof child) {
       case 'undefined':
         break;
@@ -172,8 +177,8 @@ function jsxCreateElement(this: Document, nameOrClass: string | CustomElementCon
         if(!child) break;
         if(isNode(child)) {
           element.appendChild(
-            child.ownerDocument !== this ?
-              this.adoptNode(child.cloneNode(true)) :
+            child.ownerDocument !== document ?
+              document.adoptNode(child.cloneNode(true)) :
             child.isConnected ?
               child.cloneNode(true) :
             child,
@@ -181,15 +186,14 @@ function jsxCreateElement(this: Document, nameOrClass: string | CustomElementCon
           break;
         }
       default:
-        element.appendChild(this.createTextNode(child.toString()));
+        element.appendChild(document.createTextNode(child.toString()));
         break;
     }
-  }
   return element;
 }
 
-export default jsxCreateElement.bind(window.document) as JSXCreateElement;
+export default getCreateElementFunction(window.document);
 
-export function getCreateElementFunction(document: Document): JSXCreateElement {
-  return jsxCreateElement.bind(document);
+export function getCreateElementFunction(document: Document) {
+  return jsxCreateElement.bind(document) as JSXCreateElement;
 }

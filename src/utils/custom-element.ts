@@ -171,8 +171,7 @@ export function CustomElement(
       static get observedAttributes() {
         const manual = super.observedAttributes;
         const auto = observeAttributesMap.get(Class)?.keys();
-        return manual != null && auto != null ? [...manual, ...auto] :
-          manual != null ? manual : auto;
+        return manual != null && auto != null ? [...manual, ...auto] : manual ?? auto;
       }
 
       constructor(...args: any[]) {
@@ -263,12 +262,4 @@ export function ReflectAttribute<T extends ConvertibleTypes>(name?: string | nul
       },
     } as TypedPropertyDescriptor<string | null | undefined> & ThisType<ICustomElement>));
   };
-}
-
-/** Get tag name for a custom element class if registered. */
-export function getTagFor(constructor: CustomElementConstructor) {
-  const result = tagFor.get(constructor);
-  if(result) return result;
-  const name = tagNameMap.get(constructor);
-  if(name) return { name };
 }

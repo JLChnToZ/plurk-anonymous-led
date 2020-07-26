@@ -3,6 +3,7 @@ import LedWorker from 'worker-loader?inline=true&fallback=false!./led.worker';
 import { LedDisplayRegion, LedDisplayRegionOptions } from './led-region';
 import { Bind } from '../utils';
 import { CustomElement, ObserveAttribute } from '../utils/custom-element';
+import { assignElementAttributes } from '../utils/jsx-helper';
 import { TransferCanvas, Clear, DataType, UpdateCanvas, Focus } from './led.common';
 
 @CustomElement('led-display', true)
@@ -88,8 +89,9 @@ export class LedDisplay extends HTMLCanvasElement implements ICustomElement {
     } as UpdateCanvas);
   }
 
-  constructor() {
+  constructor(options?: AssignableDomElement<LedDisplay>) {
     super();
+    if(options) assignElementAttributes(this, options);
     const offscreen = this.transferControlToOffscreen();
     this.worker.postMessage({
       type: DataType.transferCanvas,
