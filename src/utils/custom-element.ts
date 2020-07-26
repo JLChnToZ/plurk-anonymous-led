@@ -167,7 +167,11 @@ export function CustomElement(
   }
   return wrap;
   function wrap(Class: TypedCustomElementConsturctor) {
-    const WrappedClass: CustomElementConstructor = class extends Class implements ICustomElement {
+    const name = typeof target === 'string' ? target : toKebab(
+      Class.name.trim().replace(resetGlobalRegex(commonPrefixPostfix), ''),
+    );
+    const is = ext === true ? guessTagName(Class.prototype) : ext || undefined;
+    const WrappedClass: CustomElementConstructor = Object.defineProperties(class extends Class implements ICustomElement {
       static get observedAttributes() {
         const manual = super.observedAttributes;
         const auto = observeAttributesMap.get(Class)?.keys();
@@ -190,15 +194,12 @@ export function CustomElement(
         }
         super.attributeChangedCallback?.(name, oldValue, newValue);
       }
-    }
-    const name = typeof target === 'string' ? target : toKebab(
-      Class.name.trim().replace(resetGlobalRegex(commonPrefixPostfix), ''),
-    );
-    Object.defineProperty(WrappedClass, 'name', {
-      configurable: true,
-      value: `Wrapped${toCamel(name)}CustomElement`,
+    }, {
+      name: {
+        configurable: true,
+        value: `Wrapped${toCamel(name)}CustomElement`,
+      },
     });
-    const is = ext === true ? guessTagName(Class.prototype) : ext || undefined;
     window.customElements.define(name, WrappedClass, { extends: is });
     tagFor.set(WrappedClass, { name, is });
     return WrappedClass;
