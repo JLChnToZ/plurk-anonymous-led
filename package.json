@@ -4,7 +4,7 @@
   "description": "LED Display for Anonymous Plurks",
   "main": "index.js",
   "author": "JLChnToZ <jeremylam619@gmail.com>",
-  "license": "MIT",
+  "license": "WTFPL",
   "private": true,
   "scripts": {
     "build": "webpack"
