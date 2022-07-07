@@ -28,7 +28,7 @@
   "dependencies": {
     "@types/color": "^3.0.1",
     "color": "^3.1.2",
-    "moment": "^2.27.0",
+    "moment": "^2.29.4",
     "tslib": "^1.11.1",
     "unicode-bidirectional": "^2.0.5",
     "whatwg-fetch": "^3.0.0"
